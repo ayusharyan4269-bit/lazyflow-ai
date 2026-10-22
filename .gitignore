@@ -57,7 +57,7 @@ desktop.ini
 logs/
 
 # Model weights (never commit these)
-models/
+/models/
 *.gguf
 *.bin
 *.safetensors
