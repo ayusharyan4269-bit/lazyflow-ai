@@ -38,6 +38,7 @@ frontend/build/
 *.db
 *.sqlite
 *.sqlite3
+backend/app/data/
 
 # IDE
 .vscode/

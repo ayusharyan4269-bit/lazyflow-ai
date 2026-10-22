@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Send, Loader2, FileText, AlertCircle, CheckCircle2, X, Edit3, Save, Sparkles, Copy, ChevronDown } from 'lucide-react';
+import { Send, Loader2, FileText, AlertCircle, X, Edit3, Save, Sparkles, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { analyzeText, summarizeText, draftFollowUp, createTasksBatch } from '../services/api';
 import type { ExtractedTask, TaskCreate } from '../types';
