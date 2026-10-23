@@ -109,7 +109,9 @@ class OllamaProvider(AIProvider):
     async def generate(self, system_prompt: str, user_prompt: str) -> str:
         """Generate a response from the Ollama model."""
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            # Use granular timeouts: fast connect, generous read for model loading + generation
+            timeout = httpx.Timeout(connect=15.0, read=float(self.timeout), write=30.0, pool=15.0)
+            async with httpx.AsyncClient(timeout=timeout) as client:
                 resp = await client.post(
                     f"{self.base_url}/api/chat",
                     json={
@@ -145,7 +147,9 @@ class OllamaProvider(AIProvider):
         except httpx.TimeoutException:
             raise AIProviderError(
                 f"Model inference timed out after {self.timeout}s. "
-                "The model may be loading or the input may be too long."
+                "This often happens on the first request when the model is loading into memory. "
+                "Try again — subsequent requests are usually much faster. "
+                "You can increase the timeout with the LAZYFLOW_AI_REQUEST_TIMEOUT environment variable."
             )
         except AIProviderError:
             raise

@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ai_provider: str = "ollama"
     ai_model: str = "qwen2.5:3b"
     ai_base_url: str = "http://localhost:11434"
-    ai_request_timeout: int = 120
+    ai_request_timeout: int = 300
     ai_max_tokens: int = 4096
 
     # Input limits
