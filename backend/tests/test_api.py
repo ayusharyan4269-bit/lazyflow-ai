@@ -211,3 +211,50 @@ async def test_documents_crud(client: AsyncClient):
     # Delete
     delete = await client.delete(f"/api/documents/{doc_id}")
     assert delete.status_code == 204
+
+
+# ── Priority Validation (unit test, no server) ──────────
+
+def test_validate_extracted_tasks_mixed_priorities():
+    """Verify that validate_extracted_tasks preserves valid priorities and normalizes invalid ones."""
+    from app.ai.provider import validate_extracted_tasks
+
+    raw = {
+        "tasks": [
+            {"title": "Fix production outage", "priority": "high"},
+            {"title": "Update docs", "priority": "low"},
+            {"title": "Refactor auth module", "priority": "medium"},
+            {"title": "Bad priority", "priority": "CRITICAL"},
+            {"title": "Missing priority"},
+            {"title": "   ", "priority": "high"},  # blank title — should be rejected
+            {"title": "Empty string priority", "priority": ""},
+            "not a dict",  # malformed — should be skipped
+        ],
+        "key_info": ["Server uptime is 99.9%", 42, ""]
+    }
+
+    result = validate_extracted_tasks(raw)
+
+    titles = [t["title"] for t in result["tasks"]]
+    priorities = [t["priority"] for t in result["tasks"]]
+
+    # Valid tasks preserved
+    assert "Fix production outage" in titles
+    assert "Update docs" in titles
+    assert "Refactor auth module" in titles
+
+    # Blank title rejected
+    assert "   " not in titles
+
+    # Valid priorities preserved
+    assert priorities[titles.index("Fix production outage")] == "high"
+    assert priorities[titles.index("Update docs")] == "low"
+    assert priorities[titles.index("Refactor auth module")] == "medium"
+
+    # Invalid priorities normalized to medium
+    assert priorities[titles.index("Bad priority")] == "medium"
+    assert priorities[titles.index("Missing priority")] == "medium"
+    assert priorities[titles.index("Empty string priority")] == "medium"
+
+    # key_info: non-string and empty entries filtered out
+    assert result["key_info"] == ["Server uptime is 99.9%"]
